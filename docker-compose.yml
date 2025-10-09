@@ -40,11 +40,12 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy
+      # HTTPS router
       - traefik.http.routers.icehrm.rule=Host(`ats.aveltechnologies.com`)
       - traefik.http.routers.icehrm.entrypoints=websecure
       - traefik.http.routers.icehrm.tls.certresolver=letsencrypt
-      # The internal port is 8070, as defined in the original file
-      - traefik.http.services.icehrm.loadbalancer.server.port=8070
+      - traefik.http.services.icehrm.loadbalancer.server.port=80
+      # Optional HTTP -> HTTPS redirect
       - traefik.http.routers.icehrm-http.rule=Host(`ats.aveltechnologies.com`)
       - traefik.http.routers.icehrm-http.entrypoints=web
       - traefik.http.routers.icehrm-http.middlewares=redirect-to-https@file
