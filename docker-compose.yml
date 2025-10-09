@@ -1,0 +1,88 @@
+version: "3.8"
+
+networks:
+  proxy:
+    external: true
+  icehrm-net:
+    driver: bridge
+
+services:
+  # --- MariaDB for iceHRM ---
+  mysql-prod:
+    image: mysql:5.7
+    container_name: icehrm-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    volumes:
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/setup.sql
+      - ./docker/prod/db_data:/var/lib/mysql
+    networks:
+      - icehrm-net
+
+  # --- iceHRM Web App ---
+  icehrm-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile-prod
+    container_name: icehrm
+    restart: unless-stopped
+    depends_on:
+      - mysql-prod
+    volumes:
+      - ./docker/prod/app_data:/var/www/html/app/data
+    networks:
+      - proxy
+      - icehrm-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.icehrm.rule=Host(`icehrm.aveltechnologies.com`)
+      - traefik.http.routers.icehrm.entrypoints=websecure
+      - traefik.http.routers.icehrm.tls.certresolver=letsencrypt
+      # The internal port is 8070, as defined in the original file
+      - traefik.http.services.icehrm.loadbalancer.server.port=8070
+      - traefik.http.routers.icehrm-http.rule=Host(`icehrm.aveltechnologies.com`)
+      - traefik.http.routers.icehrm-http.entrypoints=web
+      - traefik.http.routers.icehrm-http.middlewares=redirect-to-https@file
+
+  # --- iceHRM Background Worker ---
+  icehrm-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile-worker
+      args:
+        - EXE_ENV=prod
+    container_name: icehrm-worker
+    restart: unless-stopped
+    depends_on:
+      - mysql-prod
+    volumes:
+      - ./docker/prod/app_data:/var/www/html/app/data
+    networks:
+      - icehrm-net
+
+  # --- phpMyAdmin for DB Management ---
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: icehrm-pma
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql-prod
+      PMA_PORT: 3306 # <-- Correct internal port
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - proxy
+      - icehrm-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      # Secure phpMyAdmin on its own subdomain
+      - traefik.http.routers.pma-icehrm.rule=Host(`pma-icehrm.aveltechnologies.com`)
+      - traefik.http.routers.pma-icehrm.entrypoints=websecure
+      - traefik.http.routers.pma-icehrm.tls.certresolver=letsencrypt
+      - traefik.http.services.pma-icehrm.loadbalancer.server.port=80
