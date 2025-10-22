@@ -38,7 +38,7 @@ COPY --chown=nobody ./core /var/www/html/core/
 COPY --chown=nobody ./extensions /var/www/html/extensions/
 COPY --chown=nobody ./web /var/www/html/web/
 COPY --chown=nobody ./index.php /var/www/html/index.php
-COPY --chown=nobody ./docker/prod/config/config.php /var/www/html/app/config.php
+# COPY --chown=nobody ./docker/prod/config/config.php /var/www/html/app/config.php
 
 # Expose the port nginx is reachable on
 EXPOSE 8070
