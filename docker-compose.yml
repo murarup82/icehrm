@@ -31,8 +31,6 @@ services:
     restart: unless-stopped
     depends_on:
       - mysql-prod
-    environment:
-      ICE_CONFIG_FILE: data/config.php
     volumes:
       - ./docker/prod/app_data:/var/www/html/app/data
       # - /data/compose/31/docker/prod/app_data/config.php:/var/www/html/app/config.php
@@ -63,8 +61,6 @@ services:
     restart: unless-stopped
     depends_on:
       - mysql-prod
-    environment:
-      ICE_CONFIG_FILE: data/config.php
     volumes:
       - ./docker/prod/app_data:/var/www/html/app/data
     networks:
