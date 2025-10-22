@@ -33,7 +33,7 @@ services:
       - mysql-prod
     volumes:
       - ./docker/prod/app_data:/var/www/html/app/data
-      - /data/compose/31/docker/prod/app_data/config.php:/var/www/html/app/config.php
+      # - /data/compose/31/docker/prod/app_data/config.php:/var/www/html/app/config.php
     networks:
       - proxy
       - icehrm-net
@@ -60,11 +60,9 @@ services:
     container_name: icehrm-worker
     restart: unless-stopped
     depends_on:
-      icehrm-prod:
-        condition: service_healthy
+      - mysql-prod
     volumes:
       - ./docker/prod/app_data:/var/www/html/app/data
-      - /data/compose/31/docker/prod/app_data/config.php:/var/www/html/app/config.php
     networks:
       - icehrm-net
 
