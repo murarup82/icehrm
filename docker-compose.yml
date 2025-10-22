@@ -44,7 +44,7 @@ services:
       - traefik.http.routers.icehrm.rule=Host(`ats.aveltechnologies.com`)
       - traefik.http.routers.icehrm.entrypoints=websecure
       - traefik.http.routers.icehrm.tls.certresolver=letsencrypt
-      - traefik.http.services.icehrm.loadbalancer.server.port=80
+      - traefik.http.services.icehrm.loadbalancer.server.port=8070
       # Optional HTTP -> HTTPS redirect
       - traefik.http.routers.icehrm-http.rule=Host(`ats.aveltechnologies.com`)
       - traefik.http.routers.icehrm-http.entrypoints=web
