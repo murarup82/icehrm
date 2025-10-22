@@ -18,7 +18,6 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
     volumes:
-      - ./app/icehrm.sql:/docker-entrypoint-initdb.d/init.sql
       - ./docker/prod/db_data:/var/lib/mysql
     networks:
       - icehrm-net
@@ -61,7 +60,8 @@ services:
     container_name: icehrm-worker
     restart: unless-stopped
     depends_on:
-      - mysql-prod
+      icehrm-prod:
+        condition: service_healthy
     volumes:
       - ./docker/prod/app_data:/var/www/html/app/data
       - /data/compose/31/docker/prod/app_data/config.php:/var/www/html/app/config.php
